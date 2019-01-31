@@ -27,6 +27,8 @@ from minRowMissb import dram_optimization as optb
 from minRowMissc import dram_optimization as optc
 
 sequence1 = read_sequence('Sequences/10_50.seq')
+optb(sequence1,4,4)
+optc(sequence1,4,4)
 sequence2 = read_sequence('Sequences/99_500.seq')
 sequence3 = read_sequence('Sequences/190_950.seq')
 sequence4 = read_sequence('Sequences/278_1400.seq')
