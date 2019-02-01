@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
 from collections import defaultdict
 
 def subsequence(elements,sequence):
@@ -15,4 +17,17 @@ def down_grade(sequence):
     return [map[s] for s in sequence],uniques
 
 def min_cut(Adj,s,t):
+    print(Adj)
+    rows, cols = np.where(Adj != 0)
+    print(rows)
+    print(cols)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    nx.draw(gr, node_size=500)
+    plt.show()
+
+    nx.minimum_cut(gr, s, t, capacity='capacity')
+
+    
     return 

@@ -55,7 +55,7 @@ sequence12 = read_sequence('Sequences/11520_644456.seq')
 sequence13 = read_sequence('Sequences/131072_393216.seq')
 sequence14 = read_sequence('Sequences/356400_1198800.seq')
 
-dram_optimization(sequence14,1,1024,512)
+#dram_optimization(sequence14,1,1024,512)
 
 for i in range(1):
     banks=2**i
