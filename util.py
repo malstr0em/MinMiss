@@ -13,3 +13,6 @@ def down_grade(sequence):
     for i in range(len(uniques)):
         map[uniques[i]]=i
     return [map[s] for s in sequence],uniques
+
+def min_cut(Adj,s,t):
+    return 
