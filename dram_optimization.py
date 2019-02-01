@@ -1,6 +1,7 @@
 from gurobipy import *
 from read_sequence import read_sequence
 import numpy as np
+from util import count_misses
 
 #Calculates a feasible allocation for sequence
 #param sequence : list
@@ -17,14 +18,25 @@ import numpy as np
 #the keys are the elements of the sequence and the values are the integers
 #from 1 up to number_of_rows
 def dram_optimization(sequence, number_of_banks, number_of_rows, number_of_columns):
-    ts = trivial_solution(sequence,number_of_banks,number_of_rows,number_of_columns)
+    print(sequence)
+    current_solution = trivial_solution(sequence,number_of_banks,number_of_rows,number_of_columns)
+    current_misses=count_misses(current_solution,sequence)
+    print(current_solution)
+    print("Trivial solution has:"+str(current_misses)+" misses.")
     if (number_of_banks==1):
-        print(optb(ts[0],sequence,number_of_rows,number_of_columns))
+        temporary_solution=np.expand_dims(optb(current_solution[0],sequence,number_of_rows,number_of_columns),0)
+        temporary_misses=count_misses(temporary_solution,sequence)
+        print(temporary_solution)
+        if(temporary_misses<current_misses):
+            current_solution=temporary_solution
+            current_misses=temporary_misses
+            print("Better solution found with:"+str(current_misses)+" misses.")
     else:
-        print(ts)
+        print('')
+    print("Best solution found has:"+str(current_misses)+" misses.")
 
 def trivial_solution(sequence, number_of_banks, number_of_rows, number_of_columns):
-    result = np.ndarray((number_of_banks, number_of_rows, number_of_columns))
+    result = np.zeros((number_of_banks, number_of_rows, number_of_columns),dtype=int)
     uniques = np.unique(sequence)
     x=0
     print('Setting up trivial solution')
@@ -62,42 +74,56 @@ for i in range(1):
     print('#'*100)
     print('Sequence1 number of banks:'+str(banks))
     dram_optimization(sequence1,banks,4,4)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence2 number of banks:'+str(banks))
     dram_optimization(sequence2,banks,16,8)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence3 number of banks:'+str(banks))
     dram_optimization(sequence3,banks,16,16)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence4 number of banks:'+str(banks))
     dram_optimization(sequence4,banks,32,16)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence5 number of banks:'+str(banks))
     dram_optimization(sequence5,banks,32,32)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence6 number of banks:'+str(banks))
     dram_optimization(sequence6,banks,32,32)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence7 number of banks:'+str(banks))
     dram_optimization(sequence7,banks,128,64)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence8 number of banks:'+str(banks))
     dram_optimization(sequence8,banks,128,64)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence9 number of banks:'+str(banks))
     dram_optimization(sequence9,banks,128,128)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence10 number of banks:'+str(banks))
     dram_optimization(sequence10,banks,128,128)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence11 number of banks:'+str(banks))
     dram_optimization(sequence11,banks,128,128)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence12 number of banks:'+str(banks))
     dram_optimization(sequence12,banks,128,128)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence13 number of banks:'+str(banks))
     #dram_optimization(sequence13,banks,128,128)
+    input("Go on? Press Anykey!")
     print('#'*100)
     print('Sequence14 number of banks:'+str(banks))
     dram_optimization(sequence14,banks,1024,512)
+    input("Go on? Press Anykey!")
