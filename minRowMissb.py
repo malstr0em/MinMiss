@@ -1,5 +1,6 @@
 from gurobipy import *
 import numpy as np
+from util import subsequence, down_grade
 
 #solution of form bank1=[row1,row2,...,rowm]
 #row1=[col1,col2,...,colk]
@@ -11,13 +12,13 @@ def dram_optimization(solution, sequence, number_of_rows, number_of_columns):
     if (number_of_rows<=maxrows):
         return _dram_optimization(sequence, number_of_rows, number_of_columns)
     else:
-        for i in range(number_of_rows-maxrows):
+        for i in range(number_of_rows-maxrows+1):
             low = i
             high = i+maxrows
             sub = subsequence(cursol[low:high],sequence)
             if(len(sub)!=0):
                 subsol=_dram_optimization(sub, maxrows, number_of_columns)
-                cursol=np.concatenate((cursol[:low-1],subsol,cursol[high+1:]))
+                cursol=np.concatenate((cursol[:low],subsol,cursol[high+1:]))
     return cursol
 
 def _dram_optimization(sequence, number_of_rows, number_of_columns):
@@ -41,7 +42,7 @@ def _dram_optimization(sequence, number_of_rows, number_of_columns):
 
     print('Setting up b Optimization')
     m = Model();
-    m.setParam('OutputFlag',False)
+    #m.setParam('OutputFlag',False)
     print('Adding Variables')
     #x[i,r]=1 object i is in row r
     x = m.addVars(number_of_elements,number_of_rows,vtype=GRB.BINARY,name='x')
@@ -68,13 +69,3 @@ def _dram_optimization(sequence, number_of_rows, number_of_columns):
                 result[r].append(uniques[i])
                 
     return np.array([x+[0]*(number_of_columns-len(x)) for x in result])
-                
-
-def subsequence(elements,sequence):
-    print('Getting subsequence from sequence of size '+str(len(sequence)))
-    np.ndarray.flatten(elements)
-    return [s for s in sequence for e in np.nditer(elements) if e==s]
-
-def down_grade(sequence):
-    uniques = np.unique(sequence)
-    return [i for s in sequence for i in range(len(uniques)) if s==uniques[i]],uniques
