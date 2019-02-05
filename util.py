@@ -43,21 +43,46 @@ def down_grade_slice(sequenceslice):
         map[uniques[i]]=i
     return [[map[s] for s in k] for k in sequenceslice],uniques
 
-def min_cut(Adj,s,t):
-    print(Adj)
-    rows, cols = np.where(Adj != 0)
-    print(rows)
-    print(cols)
-    edges = zip(rows.tolist(), cols.tolist())
-    gr = nx.Graph()
-    gr.add_edges_from(edges)
-    nx.draw(gr, node_size=500)
-    plt.show()
-
-    nx.minimum_cut(gr, s, t, capacity='capacity')
-
-    
+#given a set of sets, considers their size as input and uses a greedy approach to seperate the sets into a partition
+def binpacking_k(Adj,k,c):
     return
+#given an nx graph does a min cut  
+def min_st_cut(gr,s,t):
+       
+    nx.draw(gr, node_size=500,capacity='capacity')
+    plt.show()    
+    value, cut = nx.minimum_cut(gr, s, t, capacity='capacity')
+    l_1,l_2=cut
+        
+    return l_1,l_2
+    
+#return a set of components, if the largest component would be to big it cuts it into two smaller pieces using a min cut
+def min_cut_c(Adj,c):
+
+    rows, cols = np.where(Adj != 0)     
+    edges = zip(rows.tolist(), cols.tolist())
+    edges3 = []
+    for e in edges:
+        u,v = e
+        edges3.append((u,v,Adj[u,v]))
+        
+    gr = nx.Graph()
+    gr.add_weighted_edges_from(edges3,'capacity')
+    gr.add_nodes_from(range(len(Adj)))
+    
+    comps = list(nx.connected_component_subgraphs(gr))
+    comps = sorted(comps, key=lambda x:len(x.nodes()), reverse=True)
+    result = []
+    
+    for comp in comps:
+        if(c < comp.order()):
+            nodes=[i for i,j in comp.nodes(data=True)]
+
+            l_1,l_2 = min_st_cut(comp,nodes[0],nodes[1])
+            result=[l_1,l_2]+result
+        else:
+            result.append(comp.nodes())  
+    return result
 
 def count_misses(solution, sequence):
     s_1=dict()

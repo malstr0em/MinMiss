@@ -1,6 +1,6 @@
 from gurobipy import *
 import numpy as np
-from util import subsequenceslice, down_grade_slice, min_cut, count_missesb
+from util import subsequenceslice, down_grade_slice, min_cut_c, count_missesb
 
 iterations = 1
 
@@ -42,7 +42,8 @@ def _dram_optimization(sequenceslice, number_of_rows, number_of_columns):
             c[s-1,f-1]+=1
             f=s
         
-    #min_cut(c,0,1)
+    print(min_cut_c(c,number_of_columns))
+
 
     #print('Setting up b Optimization')
     m = Model();
