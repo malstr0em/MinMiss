@@ -171,8 +171,6 @@ def trivial_solution2(sequence, number_of_banks, number_of_rows, number_of_colum
 
 #np.set_printoptions(edgeitems=20,linewidth=250)
 
-print('Do you realize this file now has options? try --help for options')
-
 import argparse
 parser = argparse.ArgumentParser(description=("Solves multiple instances of the Minimum Row Misses Problem,"
                                  "without guarantees for optimality."))
@@ -199,6 +197,8 @@ sequence13 = read_sequence('Sequences/131072_393216.seq')
 sequence14 = read_sequence('Sequences/356400_1198800.seq')
 
 #dram_optimization(sequence14,1,1024,512)
+
+print('Do you realize this file now has options? try --help for options')
 
 for i in range(3):
     banks=2**i

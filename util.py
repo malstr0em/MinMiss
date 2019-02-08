@@ -136,7 +136,7 @@ def binpacking_k(partition,k,c):
     return bins
 #given an nx graph does a min cut  
 def min_st_cut(Adj,gr,c):
-    print(gr.edges(data=True))
+    #print(gr.edges(data=True))
     node = list(gr.nodes())[0]
     bfs = nx.bfs_tree(gr,node)
     queue = [(0,node)]
@@ -185,9 +185,9 @@ def min_st_cut(Adj,gr,c):
         assignment[cheapest]=1
         l_2.append(cheapest)
     l_1,l_2,_=swap(l_1,l_2,Adj,c)
-    print(l_1,l_2)
-    nx.draw(gr,with_labels=True)
-    plt.show()
+    #print(l_1,l_2)
+    #nx.draw(gr,with_labels=True)
+    #plt.show()
     return l_1,l_2
 
 def swap(l_1,l_2,Adj,c):
