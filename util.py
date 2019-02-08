@@ -108,6 +108,18 @@ def safeify(partition,Adj,c):
             l_1.remove(cheapest)
             assignment[cheapest]=cheapestP+1
             l_[cheapestP].append(cheapest)
+    improvement=True
+    if len(l_)==1:
+        l_1,l_[0],_=swap(l_1,l_[0],Adj,c)
+    if len(l_)==2:
+        while improvement:
+            improvement=False
+            l_1,l_[0],itmp=swap(l_1,l_[0],Adj,c)
+            improvement=improvement or itmp
+            l_1,l_[1],itmp=swap(l_1,l_[1],Adj,c)
+            improvement=improvement or itmp
+            l_[0],l_[1],itmp=swap(l_[0],l_[1],Adj,c)
+            improvement=improvement or itmp
     return [l_1]+l_
 
 #given a set of sets, considers their size as input and uses a greedy approach to seperate the sets into a partition
@@ -123,7 +135,8 @@ def binpacking_k(partition,k,c):
         bins[smallest]+=s
     return bins
 #given an nx graph does a min cut  
-def min_st_cut(gr,c):
+def min_st_cut(Adj,gr,c):
+    print(gr.edges(data=True))
     node = list(gr.nodes())[0]
     bfs = nx.bfs_tree(gr,node)
     queue = [(0,node)]
@@ -147,27 +160,23 @@ def min_st_cut(gr,c):
         l_1,l_2=l_2,l_1
     while len(l_1)>c:
         #search for cheapest node in l_1
-        cheapest=l_1[0]
-        cheapestC=0
+        cheapest=None
+        cheapestC=np.inf
         assignment = dict()
         for e in l_1:
             assignment[e]=0
         for e in l_2:
             assignment[e]=1
-        for n in gr.neighbors(cheapest):
-            edgeweight=gr[cheapest][n]['capacity']
-            if assignment[n]==0:
-                cheapestC+=edgeweight
-            else:
-                cheapestC-=edgeweight
-        for i in l_1[1:]:
+        for i in l_1:
             cost=0
             for n in gr.neighbors(i):
                 edgeweight=gr[i][n]['capacity']
-                if assignment[n]==0:
-                    cost+=edgeweight
-                else:
-                    cost-=edgeweight
+                assi=assignment.get(n)
+                if not assi is None:
+                    if assi==0:
+                        cost+=edgeweight
+                    else:
+                        cost-=edgeweight
             if cost<cheapestC:
                 cheapest=i
                 cheapestC=cost
@@ -175,7 +184,98 @@ def min_st_cut(gr,c):
         l_1.remove(cheapest)
         assignment[cheapest]=1
         l_2.append(cheapest)
+    l_1,l_2,_=swap(l_1,l_2,Adj,c)
+    print(l_1,l_2)
+    nx.draw(gr,with_labels=True)
+    plt.show()
     return l_1,l_2
+
+def swap(l_1,l_2,Adj,c):
+    changed=False
+    nodes=len(Adj)
+    improvement=True
+    assignment = dict()
+    for e in l_1:
+        assignment[e]=0
+    for e in l_2:
+        assignment[e]=1
+    space1=c-len(l_1)
+    space2=c-len(l_2)
+    while improvement:
+        improvement=False
+        #search for cheapest node in l_1
+        cheapest1=None
+        cheapestC1=np.inf
+        for i in l_1:
+            cost=0
+            for n in range(nodes):
+                edgeweight=Adj[i,n]
+                assi=assignment.get(n)
+                if not assi is None:
+                    if assi==0:
+                        cost+=edgeweight
+                    else:
+                        cost-=edgeweight
+            if cost<cheapestC1:
+                cheapest1=i
+                cheapestC1=cost
+        #search for cheapest node in l_2
+        cheapest2=None
+        cheapestC2=np.inf
+        for i in l_2:
+            cost=0
+            for n in range(nodes):
+                edgeweight=Adj[i,n]
+                assi=assignment.get(n)
+                if not assi is None:
+                    if assi==1:
+                        cost+=edgeweight
+                    else:
+                        cost-=edgeweight
+            if cost<cheapestC2:
+                cheapest2=i
+                cheapestC2=cost
+        betweenedge = 2*Adj[cheapest1,cheapest2]
+        if (cheapestC1<0 and cheapestC2<0 and
+            cheapestC1+cheapestC2+betweenedge<0):
+            #swap cheapest1 and cheapest2
+            l_1.remove(cheapest1)
+            l_2.remove(cheapest2)
+            l_1.append(cheapest2)
+            l_2.append(cheapest1)
+            assignment[cheapest1]=1
+            assignment[cheapest2]=0
+            improvement=True
+            changed=True
+        elif cheapestC1<0 and space2>0:
+            #move to l_2
+            l_1.remove(cheapest1)
+            assignment[cheapest1]=1
+            l_2.append(cheapest1)
+            space2-=1
+            space1+=1
+            improvement=True
+            changed=True
+        elif cheapestC2<0 and space1>0:
+            #move to l_1
+            l_2.remove(cheapest2)
+            assignment[cheapest2]=0
+            l_1.append(cheapest2)
+            space1-=1
+            space2+=1
+            improvement=True
+            changed=True
+        elif cheapestC1+cheapestC2+betweenedge<0:
+            #swap cheapest1 and cheapest2
+            l_1.remove(cheapest1)
+            l_2.remove(cheapest2)
+            l_1.append(cheapest2)
+            l_2.append(cheapest1)
+            assignment[cheapest1]=1
+            assignment[cheapest2]=0
+            improvement=True
+            changed=True
+    return l_1,l_2,changed
     
 #return a set of components, if the largest component would be to big it cuts it into two smaller pieces using a min cut
 def min_cut_c(Adj,c):
@@ -192,8 +292,8 @@ def min_cut_c(Adj,c):
     comps = sorted(comps, key=lambda x:len(x.nodes()), reverse=True)
     result = []
     for comp in comps:
-        if(c < comp.order()):            
-            l_1,l_2 = min_st_cut(comp,c)
+        if(c < comp.order()):
+            l_1,l_2 = min_st_cut(Adj,comp,c)
             result=[l_1,l_2]+result
         else:
             result.append(list(comp.nodes()))  
