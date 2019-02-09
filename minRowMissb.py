@@ -3,6 +3,7 @@ import numpy as np
 import random as rm
 from util import subsequenceslice, down_grade_slice, min_cut_c, count_missesb,binpacking_k,safeify
 import time as tm
+import math
 
 #solution of form bank1=[row1,row2,...,rowm]
 #row1=[col1,col2,...,colk]
@@ -25,8 +26,9 @@ def dram_optimization(solution, sequence, number_of_rows, number_of_columns,time
         iterator = []
         for i in range(len(cursol)):
             for j in range(len(cursol)):
-                if i<j:
-                    iterator.append((i,j))
+                if i<j and tm.time()-start<time/4:
+                    for _ in range(round(math.log(number_of_columns,2))):
+                        iterator.append((i,j))
         rm.shuffle(iterator)
         itcount=len(iterator)
         count=0

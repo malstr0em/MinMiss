@@ -1,9 +1,10 @@
 from gurobipy import *
 from read_sequence import read_sequence
 import numpy as np
-from util import count_misses,subsequence
+from util import count_misses,subsequence,mapc
 import random as rm
 import time as tm
+import math
 
 from minRowMissb import dram_optimization as optb
 from minRowMissc import dram_optimization as optc
@@ -40,7 +41,7 @@ def dram_optimization(sequence, number_of_banks, number_of_rows, number_of_colum
         solutionchain.append(trivial_solution2(sequence, number_of_banks, number_of_rows, number_of_columns))
         for solution in solutionchain:
             if tm.time()-glstart>time:
-                print ('Best Solution found has '+str(best_misses)+' misses')
+                #print ('Best Solution found has '+str(best_misses)+' misses')
                 misses = count_misses(best_solution, sequence)
                 hits = len(sequence)-misses
                 banks = dict()
@@ -58,6 +59,16 @@ def dram_optimization(sequence, number_of_banks, number_of_rows, number_of_colum
             if test_misses<best_misses:
                 best_solution = test_solution
                 best_misses = test_misses
+    misses = count_misses(best_solution, sequence)
+    hits = len(sequence)-misses
+    banks = dict()
+    rows = dict()
+    for b in range(len(best_solution)):
+        for r in range(len(best_solution[b])):
+            for c in best_solution[b][r]:
+                banks[c]=b
+                rows[c]=r
+    return hits,misses,banks,rows
 
 def dram_optimization_sub(solution, sequence, number_of_banks, number_of_rows, number_of_columns,time=np.inf):
     lstart=tm.time()
@@ -99,11 +110,23 @@ def dram_optimization_sub(solution, sequence, number_of_banks, number_of_rows, n
             b,x=t
             current_solution_tmp[b,x]=i
         current_solution=current_solution_tmp
+        current_solution_mapped, sequence_mapped, mapping = mapc(current_solution,sequence)
+        current_solution_mapped=optc(current_solution_mapped,sequence_mapped,number_of_banks,number_of_rows,time-(tm.time()-lstart))
+        temporary_solution=np.zeros((number_of_banks, number_of_rows, number_of_columns),dtype=int)
+        for b in range(len(temporary_solution)):
+            for r in range(len(temporary_solution[b])):
+                temporary_solution[b,r]=mapping[current_solution_mapped[b,r]]
+        temporary_misses=count_misses(temporary_solution,sequence)
+        if(temporary_misses<current_misses):
+            current_solution=temporary_solution
+            current_misses=temporary_misses
+    improvements=True
     while improvements:
+        improvements=False
         for b in range(number_of_banks):
             if tm.time()-lstart>time:
                 return current_solution
-            improvements=False
+            temporary_solution=current_solution
             solpart=optb(current_solution[b],subsequence(current_solution[b],sequence),number_of_rows,number_of_columns,time-(tm.time()-lstart))
             temporary_solution[b]=solpart
             temporary_misses=count_misses(temporary_solution,sequence)
@@ -111,10 +134,23 @@ def dram_optimization_sub(solution, sequence, number_of_banks, number_of_rows, n
                 improvements=True
                 current_solution=temporary_solution
                 current_misses=temporary_misses
+
+        if not improvements and number_of_banks>1:
+            current_solution_mapped, sequence_mapped, mapping = mapc(current_solution,sequence)
+            current_solution_mapped=optc(current_solution_mapped,sequence_mapped,number_of_banks,number_of_rows,time-(tm.time()-lstart))
+            temporary_solution=np.zeros((number_of_banks, number_of_rows, number_of_columns),dtype=int)
+            for b in range(len(temporary_solution)):
+                for r in range(len(temporary_solution[b])):
+                    temporary_solution[b,r]=mapping[current_solution_mapped[b,r]]
+            temporary_misses=count_misses(temporary_solution,sequence)
+            if(temporary_misses<current_misses):
+                improvements=True
+                current_solution=temporary_solution
+                current_misses=temporary_misses
     return current_solution
 
-epsilon=2
 def dram_optimization_wrapper(sequence, number_of_banks, number_of_rows, number_of_columns,time=np.inf):
+    epsilon=1
     timemeasure=tm.time()
     hits,misses,banks,rows=dram_optimization(sequence, number_of_banks, number_of_rows, number_of_columns,time-epsilon)
     print(str(round(tm.time()-timemeasure,2))+' seconds elapsed. Solution has '+str(misses)+' misses.')

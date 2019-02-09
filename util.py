@@ -2,6 +2,7 @@ import numpy as np
 import pylab as plt
 import networkx as nx
 from collections import defaultdict
+import random as rm
 
 def subsequence(elements,sequence):
     map = defaultdict(lambda : False)
@@ -152,7 +153,8 @@ def min_st_cut(Adj,gr,c):
         depth , element = end
         for s in bfs.successors(element):
             queue.append((depth+1,s))
-    value, cut = nx.minimum_cut(gr, start[1], end[1])
+    #value, cut = nx.minimum_cut(gr, start[1], end[1])
+    cut=random_partition(gr,c)
     l_1,l_2=cut
     l_1=list(l_1)
     l_2=list(l_2)
@@ -189,6 +191,19 @@ def min_st_cut(Adj,gr,c):
     #nx.draw(gr,with_labels=True)
     #plt.show()
     return l_1,l_2
+
+def random_partition(gr,c):
+    E=list(gr.nodes)
+    rm.shuffle(E)
+    partition1 = []
+    partition2 = []
+    for e in E:
+        r=rm.randint(0,1)
+        if r==0:
+            partition1.append(e)
+        else:
+            partition2.append(e)
+    return partition1,partition2
 
 def swap(l_1,l_2,Adj,c):
     changed=False
@@ -333,5 +348,41 @@ def count_missesb(solution, sequence):
     return count
 
 def count_missesc(solution, sequence):
-    return count_misses(np.expand_dims(solution,2),sequence)
+    s_1=dict()
+    for b in range(np.shape(solution)[0]):
+        for r in range(np.shape(solution)[1]):
+            s_1[solution[b,r]]=(b,r)
+    banks=[None]*np.shape(solution)[0]
+    count=0
+    for s in sequence:
+        b,r=s_1[s]
+        if banks[b]!=r:
+            count+=1
+            #print(str(s)+','+str(b)+','+str(r)+','+str(banks[b])+','+str(count))
+            banks[b]=r
+    return count
+
+def mapc(solution,sequence):
+    mapping = dict()
+    mapped_solution = np.zeros((len(solution),len(solution[0])), dtype=int)
+    x=1
+    for b in range(len(solution)):
+        for r in range(len(solution[b])):
+            mapped_solution[b,r]=x
+            mapping[x]=solution[b,r]
+            x+=1
+    mapping_inverse = dict()
+    for x,r in mapping.items():
+        for c in r:
+           mapping_inverse[c]=x
+    mapped_sequence=[]
+    last=None
+    for s in sequence:
+        s_=mapping_inverse[s]
+        if s_!=last:
+            last=s_
+            mapped_sequence.append(s_)
+    return mapped_solution, mapped_sequence, mapping
+            
+        
         
