@@ -150,7 +150,7 @@ def dram_optimization_sub(solution, sequence, number_of_banks, number_of_rows, n
     return current_solution
 
 def dram_optimization_wrapper(sequence, number_of_banks, number_of_rows, number_of_columns,time=np.inf):
-    epsilon=1
+    epsilon=2
     timemeasure=tm.time()
     hits,misses,banks,rows=dram_optimization(sequence, number_of_banks, number_of_rows, number_of_columns,time-epsilon)
     print(str(round(tm.time()-timemeasure,2))+' seconds elapsed. Solution has '+str(misses)+' misses.')
